@@ -14,7 +14,7 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/image/**").authenticated()
                         .anyExchange().permitAll()
-                )
+                );
 
         return http.build();
     }
