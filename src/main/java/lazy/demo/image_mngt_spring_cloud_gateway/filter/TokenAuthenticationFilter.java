@@ -28,7 +28,6 @@ public class TokenAuthenticationFilter extends AbstractGatewayFilterFactory<Toke
 
     @Override
     public GatewayFilter apply(Config config) {
-        System.out.println("TokenAuthenticationFilter");
         return (exchange, chain) -> {
             String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
             System.out.println(authHeader);
@@ -37,26 +36,34 @@ public class TokenAuthenticationFilter extends AbstractGatewayFilterFactory<Toke
                 return this.onError(exchange, "Authorization header is missing or invalid", HttpStatus.UNAUTHORIZED);
             }
 
-            String token = authHeader.substring(7);
-            System.out.println(token);
+            // Gọi Auth Service để lấy thông tin người dùng từ token
+            return authServiceClient.getUserByTokenWithAuthService(authHeader)
+                    .flatMap(userResp -> {
+                        System.out.println(userResp);
 
-            UserResp userResp  = authServiceClient.getUserByTokenWithAuthService(token);
+                        if (userResp == null) {
+                            return this.onError(exchange, "Invalid Token", HttpStatus.UNAUTHORIZED);
+                        }
 
-            System.out.println(userResp);
-
-            if (Objects.isNull(userResp)) {
-                return this.onError(exchange, "Invalid Token", HttpStatus.UNAUTHORIZED);
-            }
-
-            Long imageUserId = imageServiceClient.extractUserIdFromImageService(exchange);
-
-            if (!userResp.getUserId().equals(imageUserId)) {
-                return this.onError(exchange, "User ID mismatch", HttpStatus.FORBIDDEN);
-            }
-
-            return chain.filter(exchange);
+                        // Gọi Image Service để lấy userId từ image
+                        return imageServiceClient.extractUserIdFromImageService(exchange)
+                                .flatMap(imageUserId -> {
+                                    System.out.println(imageUserId);
+                                    if (!userResp.getUserId().equals(imageUserId)) {
+                                        System.out.println("User ID mismatch");
+                                        return this.onError(exchange, "User ID mismatch", HttpStatus.FORBIDDEN);
+                                    }
+                                    // Nếu tất cả kiểm tra hợp lệ, chuyển tiếp yêu cầu
+                                    return chain.filter(exchange);
+                                });
+                    })
+                    .onErrorResume(e -> {
+                        e.printStackTrace();
+                        return this.onError(exchange, "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+                    });
         };
     }
+
 
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
         exchange.getResponse().setStatusCode(httpStatus);
