@@ -1,26 +1,24 @@
 package lazy.demo.image_mngt_spring_cloud_gateway.filter;
 
-import lazy.demo.image_mngt_spring_cloud_gateway.dto.UserResp;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import lazy.demo.image_mngt_spring_cloud_gateway.service.AuthServiceClient;
 import lazy.demo.image_mngt_spring_cloud_gateway.service.ImageServiceClient;
 
-import java.util.Objects;
-
 
 @Component
-public class TokenAuthenticationFilter extends AbstractGatewayFilterFactory<TokenAuthenticationFilter.Config> {
+public class ImageDetailFilter extends AbstractGatewayFilterFactory<ImageDetailFilter.Config> {
 
     private final AuthServiceClient authServiceClient;
     private final ImageServiceClient imageServiceClient;
 
-    public TokenAuthenticationFilter(AuthServiceClient authServiceClient, ImageServiceClient imageServiceClient) {
+    public ImageDetailFilter(AuthServiceClient authServiceClient, ImageServiceClient imageServiceClient) {
         super(Config.class);
         this.authServiceClient = authServiceClient;
         this.imageServiceClient = imageServiceClient;
@@ -57,9 +55,12 @@ public class TokenAuthenticationFilter extends AbstractGatewayFilterFactory<Toke
                                     return chain.filter(exchange);
                                 });
                     })
-                    .onErrorResume(e -> {
-                        e.printStackTrace();
-                        return this.onError(exchange, "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+                    .onErrorResume(WebClientResponseException.class, e -> {
+                        // Trả về mã trạng thái và nội dung lỗi từ service gốc
+                        exchange.getResponse().setStatusCode(e.getStatusCode());
+                        exchange.getResponse().getHeaders().addAll(e.getHeaders());
+                        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse()
+                                .bufferFactory().wrap(e.getResponseBodyAsByteArray())));
                     });
         };
     }
