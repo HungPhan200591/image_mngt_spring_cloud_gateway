@@ -2,7 +2,6 @@ package lazy.demo.image_mngt_spring_cloud_gateway.service;
 
 import lazy.demo.image_mngt_spring_cloud_gateway.dto.GenericResponse;
 import lazy.demo.image_mngt_spring_cloud_gateway.dto.ImageResp;
-import lazy.demo.image_mngt_spring_cloud_gateway.dto.UserResp;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
