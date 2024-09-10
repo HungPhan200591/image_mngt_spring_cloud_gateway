@@ -40,7 +40,7 @@ spring:
         - id: image-service-image-detail
           uri: ${SPRING_CLOUD_GATEWAY_URI_FILE_SERVICE:http://localhost:8082}
           predicates:
-            - Path=/api/v1/file/image/{image_id}
+            - Path=/api/v1/file/image/{image_id:^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$}
           filters:
             - ImageDetailFilter
 
@@ -48,3 +48,6 @@ spring:
           uri: ${SPRING_CLOUD_GATEWAY_URI_FILE_SERVICE:http://localhost:8082}
           predicates:
             - Path=/api/v1/file/image/**
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
