@@ -2,6 +2,7 @@ package lazy.demo.image_mngt_spring_cloud_gateway.service;
 
 import lazy.demo.image_mngt_spring_cloud_gateway.dto.GenericResponse;
 import lazy.demo.image_mngt_spring_cloud_gateway.dto.UserResp;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -13,9 +14,10 @@ public class AuthServiceClient {
 
     private final WebClient webClient;
 
-    public AuthServiceClient(WebClient.Builder webClientBuilder) {
+    public AuthServiceClient(WebClient.Builder webClientBuilder,
+                             @Value("${spring.auth-service.url}") String authServiceUrl) {
         this.webClient = webClientBuilder
-                .baseUrl("http://localhost:8081")
+                .baseUrl(authServiceUrl)
                 .build();
     }
 

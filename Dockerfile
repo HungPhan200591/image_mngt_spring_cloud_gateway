@@ -8,7 +8,7 @@ WORKDIR /app
 COPY target/image_mngt_spring_cloud_gateway-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose the port the application runs on
-EXPOSE 8082
+EXPOSE 8080
 
 # Run the jar file
 ENTRYPOINT ["java", "-jar", "app.jar"]

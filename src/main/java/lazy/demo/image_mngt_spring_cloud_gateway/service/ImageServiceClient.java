@@ -2,6 +2,7 @@ package lazy.demo.image_mngt_spring_cloud_gateway.service;
 
 import lazy.demo.image_mngt_spring_cloud_gateway.dto.GenericResponse;
 import lazy.demo.image_mngt_spring_cloud_gateway.dto.ImageResp;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,10 @@ public class ImageServiceClient {
 
     private final WebClient webClient;
 
-    public ImageServiceClient(WebClient.Builder webClientBuilder) {
+    public ImageServiceClient(WebClient.Builder webClientBuilder,
+                              @Value("${spring.file-service.url}") String fileServiceUrl) {
         this.webClient = webClientBuilder
-                .baseUrl("http://localhost:8082")
+                .baseUrl(fileServiceUrl)
                 .build();
     }
 
