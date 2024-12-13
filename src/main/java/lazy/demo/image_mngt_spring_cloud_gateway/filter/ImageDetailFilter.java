@@ -2,14 +2,18 @@ package lazy.demo.image_mngt_spring_cloud_gateway.filter;
 
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import lazy.demo.image_mngt_spring_cloud_gateway.service.AuthServiceClient;
 import lazy.demo.image_mngt_spring_cloud_gateway.service.ImageServiceClient;
+
+import java.nio.charset.StandardCharsets;
 
 
 @Component
@@ -68,7 +72,13 @@ public class ImageDetailFilter extends AbstractGatewayFilterFactory<ImageDetailF
 
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
         exchange.getResponse().setStatusCode(httpStatus);
-        return exchange.getResponse().setComplete();
+        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+        // Tạo nội dung JSON cho lỗi
+        String jsonError = String.format("{\"error\": \"%s\", \"status\": %d}", err, httpStatus.value());
+        DataBuffer dataBuffer = exchange.getResponse().bufferFactory().wrap(jsonError.getBytes(StandardCharsets.UTF_8));
+
+        return exchange.getResponse().writeWith(Mono.just(dataBuffer));
     }
 
     public static class Config {
