@@ -37,7 +37,7 @@ public class AuthServiceClient {
                         return Mono.error(new RuntimeException("Failed to fetch user details"));
                     }
                 })
-                .doOnError(e -> e.printStackTrace());
+                .doOnError(Throwable::printStackTrace);
 
     }
 }

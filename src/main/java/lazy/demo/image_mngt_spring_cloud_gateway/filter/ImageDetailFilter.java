@@ -50,9 +50,7 @@ public class ImageDetailFilter extends AbstractGatewayFilterFactory<ImageDetailF
                         // Gọi Image Service để lấy userId từ image
                         return imageServiceClient.extractUserIdFromImageService(exchange)
                                 .flatMap(imageUserId -> {
-                                    System.out.println(imageUserId);
                                     if (!userResp.getUserId().equals(imageUserId)) {
-                                        System.out.println("User ID mismatch");
                                         return this.onError(exchange, "User ID mismatch", HttpStatus.FORBIDDEN);
                                     }
                                     // Nếu tất cả kiểm tra hợp lệ, chuyển tiếp yêu cầu
@@ -68,7 +66,6 @@ public class ImageDetailFilter extends AbstractGatewayFilterFactory<ImageDetailF
                     });
         };
     }
-
 
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
         exchange.getResponse().setStatusCode(httpStatus);
